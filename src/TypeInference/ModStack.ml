@@ -73,3 +73,5 @@ let leave_module (old_top, stack) ~public name =
 
 let open_module (top, stack) ~public m =
   (Module.open_module top ~public m, stack)
+
+let top_module (m, stack) = m

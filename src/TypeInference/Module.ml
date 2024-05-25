@@ -46,6 +46,9 @@ type t = {
 
   mod_map : t ident_info StrMap.t;
     (** Information about defined modules *)
+  
+  name : string
+    (** Name of the module *)
 }
 
 let unit_info =
@@ -65,7 +68,8 @@ let empty =
     tvar_map     = StrMap.empty;
     implicit_map = StrMap.empty;
     ctor_map     = StrMap.empty;
-    mod_map      = StrMap.empty
+    mod_map      = StrMap.empty;
+    name         = ""
   }
 
 let toplevel =
@@ -150,7 +154,8 @@ let filter_public m =
     tvar_map     = StrMap.filter public m.tvar_map;
     implicit_map = StrMap.filter public m.implicit_map;
     ctor_map     = StrMap.filter public m.ctor_map;
-    mod_map      = StrMap.filter public m.mod_map
+    mod_map      = StrMap.filter public m.mod_map;
+    name         = m.name
   }
 
 let open_module m ~public m' =
@@ -159,5 +164,8 @@ let open_module m ~public m' =
     tvar_map     = StrMap.union combine m.tvar_map     m'.tvar_map;
     implicit_map = StrMap.union combine m.implicit_map m'.implicit_map;
     ctor_map     = StrMap.union combine m.ctor_map     m'.ctor_map;
-    mod_map      = StrMap.union combine m.mod_map      m'.mod_map
+    mod_map      = StrMap.union combine m.mod_map      m'.mod_map;
+    name         = m.name
   }
+
+let name m = m.name

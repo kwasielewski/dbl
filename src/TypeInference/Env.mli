@@ -20,6 +20,8 @@ type pp_info = {
     (** Position of the binding place *)
 }
 
+val find_path_opt : t -> T.typ -> T.tvar S.path option
+
 (** Empty environment *)
 val empty : t
 

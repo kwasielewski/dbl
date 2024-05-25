@@ -99,3 +99,5 @@ val filter_public : t -> t
 (** Introduce the given module's identifiers into scope with visibility
   specified by [~public]. *)
 val open_module : t -> public:bool -> t -> t
+
+val name : t -> string

@@ -611,6 +611,8 @@ module Type : sig
     of unification variables accordingly. On error, it returns escaping type
     variable. *)
   val try_shrink_scope : scope:scope -> typ -> (unit, tvar) result
+
+  module Map : Map.S with type key = typ
 end
 
 (* ========================================================================= *)

@@ -98,10 +98,16 @@ end = struct
     | None ->
       begin match Env.lookup_tvar_pp_info env.env x with
       | Some info ->
-        begin match List.find_opt (tvar_valid_name env x) info.pp_names with
-        | Some path -> Some (pp_path path)
-        | None -> T.TVar.Map.find_opt x env.context.tvar_map
+        begin match List.find_all (tvar_valid_name env x) info.pp_names with
+        | [] -> T.TVar.Map.find_opt x env.context.tvar_map
+        | xs -> List.iter (fun path -> print_endline ("Path found " ^ (pp_path path))) xs;
+            Some (pp_path (List.hd xs))
         end
+        (*
+        begin match List.find_opt (tvar_valid_name env x) info.pp_names with
+        | Some path -> print_endline ("Some path found " ^ (pp_path path)); Some (pp_path path)
+        | None -> T.TVar.Map.find_opt x env.context.tvar_map
+        end*)
       | None -> T.TVar.Map.find_opt x env.context.tvar_map
       end
 
@@ -190,7 +196,7 @@ let gen_tvar_name is_fresh base =
 
 let pp_tvar env x =
   match PPEnv.lookup_tvar env x with
-  | Some name -> name
+  | Some name -> print_endline ("tvar lookup succesful " ^  name); name
   | None ->
     let (pos, base) =
       match PPEnv.lookup_tvar_pp_info env x with
@@ -247,10 +253,18 @@ and fresh_for_scheme env name { T.sch_targs = _; sch_named; sch_body } =
 
 (* ========================================================================= *)
 
+let rec pp_mod_path buf env (path : T.tvar S.path) =
+  match path with
+  | NPName x -> ()
+  | NPSel(n, p) ->
+    pp_mod_path buf env p;
+    Buffer.add_string buf ".";
+    Buffer.add_string buf n
+
 let rec pp_type buf env prec tp =
   match T.Type.view tp with
   | TUVar(_, u) -> Buffer.add_string buf (pp_uvar env u)
-  | TVar x -> Buffer.add_string buf (pp_tvar env x)
+  | TVar x -> print_endline "tvar pp"; Buffer.add_string buf (pp_tvar env x)
   | TEffect xs ->
     Buffer.add_string buf "[";
     pp_effect_prefix buf env "" (T.TVar.Set.to_list xs);
@@ -407,8 +421,14 @@ let tvar_to_string ctx env x =
 
 let type_to_string ctx env tp =
   let buf = Buffer.create 80 in
+  (*(match (Env.find_path_opt env tp) with 
+  | Some path -> pp_mod_path buf (PPEnv.create ctx env) path
+  | None -> print_endline "nothing found"; ());*)
   pp_type buf (PPEnv.create ctx env) 0 tp;
   Buffer.contents buf
+
+let mod_stack_to_string ctx env tp =
+  pp_tvar (PPEnv.create ctx env) tp
 
 let scheme_to_string ctx env sch =
   let buf = Buffer.create 80 in

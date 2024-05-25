@@ -27,9 +27,14 @@ type t = {
   pp_map : pp_info T.TVar.Map.t;
     (** Additional metadata used for pretty-printing of types *)
 
-  scope : T.scope
+  scope : T.scope;
     (** Scope of type variables *)
+
+  tp_map : T.tvar S.path T.Type.Map.t
 }
+
+let find_path_opt env tp =
+  T.Type.Map.find_opt tp env.tp_map
 
 let mk_builtin_pp_info (name, x) =
   let info =
@@ -50,7 +55,8 @@ let empty =
     scope        =
       T.BuiltinType.all
       |> List.map snd
-      |> List.fold_left T.Scope.add T.Scope.initial
+      |> List.fold_left T.Scope.add T.Scope.initial;
+    tp_map       = T.Type.Map.empty
   }
 
 let add_poly_var ?(public=false) env x sch =
@@ -75,10 +81,11 @@ let add_method_fn ~public env x name =
   { env with mod_stack = ModStack.add_method_fn ~public env.mod_stack x name }
 
 let add_tvar ?pos ?(public=false) env name kind =
+  print_endline "add_tvar";
   let mod_stack, x = ModStack.add_tvar ~public env.mod_stack name kind in
   let pp_info = 
     { pp_base_name = name;
-      pp_names     = [ NPName name ];
+      pp_names     = [ NPSel (Module.name (ModStack.top_module mod_stack), NPName name) ];
       pp_pos       = pos
     } in
   { env with

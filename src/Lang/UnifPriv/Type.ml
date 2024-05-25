@@ -225,3 +225,8 @@ let scheme_is_monomorphic sch =
   match sch with
   | { sch_targs = []; sch_named = []; sch_body = _ } -> true
   | _ -> false
+
+module Map = Map.Make(struct
+  type t = typ
+  let compare = compare
+end)
